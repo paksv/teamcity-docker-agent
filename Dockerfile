@@ -101,6 +101,7 @@ RUN apt-get update && \
                 libssl1.0.0 \
                 libstdc++6 \
                 zlib1g \
+                gettext \
             && rm -rf /var/lib/apt/lists/* && \
         \
         curl -SL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz --output dotnet.tar.gz \
