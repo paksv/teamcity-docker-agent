@@ -35,6 +35,11 @@ RUN update-alternatives --install /usr/bin/java java ${JRE_HOME}/bin/java 1 && \
 
 
 VOLUME /data/teamcity_agent/conf
+VOLUME /opt/buildagent/work
+VOLUME /opt/buildagent/system
+VOLUME /opt/buildagent/temp
+VOLUME /opt/buildagent/logs
+VOLUME /opt/buildagent/tools
 
 ENV CONFIG_FILE=/data/teamcity_agent/conf/buildAgent.properties \
     LANG=C.UTF-8
