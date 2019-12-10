@@ -1,10 +1,5 @@
 FROM ubuntu:18.04
 
-
-LABEL dockerImage.teamcity.version="latest" \
-      dockerImage.teamcity.buildNumber="latest"
-
-
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 RUN apt-get update \
@@ -40,7 +35,6 @@ RUN update-alternatives --install /usr/bin/java java ${JRE_HOME}/bin/java 1 && \
 
 
 VOLUME /data/teamcity_agent/conf
-VOLUME /opt/buildagent
 
 ENV CONFIG_FILE=/data/teamcity_agent/conf/buildAgent.properties \
     LANG=C.UTF-8
@@ -52,10 +46,14 @@ COPY run-agent.sh /run-agent.sh
 COPY run-services.sh /run-services.sh
 COPY dist/buildagent /opt/buildagent
 
-RUN apt-get install -y --no-install-recommends sudo && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends sudo && \
     useradd -m buildagent && \
     chmod +x /opt/buildagent/bin/*.sh && \
     chmod +x /run-agent.sh /run-services.sh && sync
+
+LABEL dockerImage.teamcity.version="latest" \
+      dockerImage.teamcity.buildNumber="latest"
 
     # Opt out of the telemetry feature
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=true \
@@ -73,51 +71,51 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=true \
     # Install .NET Core SDK
     DOTNET_SDK_VERSION=3.0.100
 
-RUN apt-get install -y git mercurial apt-transport-https ca-certificates software-properties-common && \
-    \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-    \
-    apt-cache policy docker-ce && \
-    apt-get update && \
-    apt-get install -y  docker-ce=5:19.03.3~3-0~ubuntu-bionic \
-                        docker-ce-cli=5:19.03.3~3-0~ubuntu-bionic \
-                        containerd.io=1.2.6-3 \
-                        systemd && \
-    systemctl disable docker && \
-    curl -SL "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose && \
-    \
-    apt-get install -y --no-install-recommends \
-            fontconfig \
-            libc6 \
-            libgcc1 \
-            libgssapi-krb5-2 \
-            libicu60 \
-            liblttng-ust0 \
-            libssl1.0.0 \
-            libstdc++6 \
-            zlib1g \
-        && rm -rf /var/lib/apt/lists/* && \
-    \
-    curl -SL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz --output dotnet.tar.gz \
-        && mkdir -p /usr/share/dotnet \
-        && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
-        && rm dotnet.tar.gz \
-        && find /usr/share/dotnet -name "*.lzma" -type f -delete \
-        && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
-    \
-    apt-get clean all && \
-    \
-    usermod -aG docker buildagent
+RUN apt-get update && \
+        apt-get install -y git mercurial apt-transport-https ca-certificates software-properties-common && \
+        \
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
+        add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
+        \
+        apt-cache policy docker-ce && \
+        apt-get update && \
+        apt-get install -y  docker-ce=5:19.03.3~3-0~ubuntu-bionic \
+                            docker-ce-cli=5:19.03.3~3-0~ubuntu-bionic \
+                            containerd.io=1.2.6-3 \
+                            systemd && \
+        systemctl disable docker && \
+        curl -SL "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose && \
+        \
+        apt-get install -y --no-install-recommends \
+                fontconfig \
+                libc6 \
+                libgcc1 \
+                libgssapi-krb5-2 \
+                libicu60 \
+                liblttng-ust0 \
+                libssl1.0.0 \
+                libstdc++6 \
+                zlib1g \
+            && rm -rf /var/lib/apt/lists/* && \
+        \
+        curl -SL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz --output dotnet.tar.gz \
+            && mkdir -p /usr/share/dotnet \
+            && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
+            && rm dotnet.tar.gz \
+            && find /usr/share/dotnet -name "*.lzma" -type f -delete \
+            && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
+        \
+        apt-get clean all && \
+        \
+        usermod -aG docker buildagent
 
-# A better fix for TW-52939 Dockerfile build fails because of aufs
+    # A better fix for TW-52939 Dockerfile build fails because of aufs
 VOLUME /var/lib/docker
 
 COPY run-docker.sh /services/run-docker.sh
 
-# Trigger .NET CLI first run experience by running arbitrary cmd to populate local package cache
+    # Trigger .NET CLI first run experience by running arbitrary cmd to populate local package cache
 RUN dotnet help
-
 
 CMD ["/run-services.sh"]
 
