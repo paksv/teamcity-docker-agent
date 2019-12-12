@@ -120,6 +120,10 @@ VOLUME /var/lib/docker
 
 COPY run-docker.sh /services/run-docker.sh
 
+RUN chown -R buildagent:buildagent /opt/buildagent
+RUN chown -R buildagent:buildagent /services
+
+
 # Trigger .NET CLI first run experience by running arbitrary cmd to populate local package cache
 RUN dotnet help
 
