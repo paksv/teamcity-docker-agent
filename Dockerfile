@@ -2,8 +2,8 @@ FROM ubuntu:18.04
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl ca-certificates fontconfig locales unzip \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates fontconfig locales unzip \
     && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
@@ -51,9 +51,7 @@ COPY run-agent.sh /run-agent.sh
 COPY run-services.sh /run-services.sh
 COPY dist/buildagent /opt/buildagent
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends sudo && \
-    useradd -m buildagent && \
+RUN useradd -m buildagent && \
     chmod +x /opt/buildagent/bin/*.sh && \
     chmod +x /run-agent.sh /run-services.sh && sync
 
@@ -76,23 +74,7 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=true \
     # Install .NET Core SDK
     DOTNET_SDK_VERSION=3.0.100
 
-RUN apt-get update && \
-        apt-get install -y git mercurial apt-transport-https ca-certificates software-properties-common && \
-        \
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-        add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-        \
-        apt-cache policy docker-ce && \
-        apt-get update && \
-        apt-get install -y  docker-ce=5:19.03.3~3-0~ubuntu-bionic \
-                            docker-ce-cli=5:19.03.3~3-0~ubuntu-bionic \
-                            containerd.io=1.2.6-3 \
-                            systemd && \
-        systemctl disable docker && \
-        curl -SL "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose && \
-        \
-        apt-get install -y --no-install-recommends \
-                fontconfig \
+RUN     apt-get update && apt-get install -y git mercurial apt-transport-https ca-certificates software-properties-common sudo \
                 libc6 \
                 libgcc1 \
                 libgssapi-krb5-2 \
@@ -102,18 +84,29 @@ RUN apt-get update && \
                 libstdc++6 \
                 zlib1g \
                 gettext \
-            && rm -rf /var/lib/apt/lists/* && \
-        \
-        curl -SL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz --output dotnet.tar.gz \
+                && rm -rf /var/lib/apt/lists/*
+
+RUN     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
+        add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
+        apt-get update && \
+        apt-cache policy docker-ce && \
+        apt-get install -y  docker-ce=5:19.03.3~3-0~ubuntu-bionic \
+                            docker-ce-cli=5:19.03.3~3-0~ubuntu-bionic \
+                            containerd.io=1.2.6-3 \
+                            systemd && \
+        apt-get clean all && \
+        rm -rf /var/lib/apt/lists/*
+
+RUN        systemctl disable docker \
+            && curl -SL "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+            && chmod +x /usr/local/bin/docker-compose \
+            && curl -SL https://repo.labs.intellij.net/thirdparty/dotnet-sdk-${DOTNET_SDK_VERSION}-linux-x64.tar.gz --output dotnet.tar.gz \
             && mkdir -p /usr/share/dotnet \
             && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
             && rm dotnet.tar.gz \
             && find /usr/share/dotnet -name "*.lzma" -type f -delete \
-            && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet && \
-        \
-        apt-get clean all && \
-        \
-        usermod -aG docker buildagent
+            && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
+            && usermod -aG docker buildagent
 
     # A better fix for TW-52939 Dockerfile build fails because of aufs
 VOLUME /var/lib/docker
