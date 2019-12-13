@@ -49,7 +49,7 @@ LABEL dockerImage.teamcity.version="latest" \
 
 COPY run-agent.sh /run-agent.sh
 COPY run-services.sh /run-services.sh
-COPY dist/buildagent /opt/buildagent
+COPY ../dist/buildagent /opt/buildagent
 
 RUN useradd -m buildagent && \
     chmod +x /opt/buildagent/bin/*.sh && \
@@ -126,3 +126,5 @@ RUN dotnet help
 CMD ["/run-services.sh"]
 
 EXPOSE 9090
+# for system tests
+EXPOSE 8111
