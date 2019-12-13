@@ -113,18 +113,10 @@ VOLUME /var/lib/docker
 
 COPY run-docker.sh /services/run-docker.sh
 
-#RUN chown -R buildagent:buildagent /opt/buildagent
-#RUN chown -R buildagent:buildagent /services
-#RUN chown -R buildagent:buildagent /data/teamcity_agent
-
-
 # Trigger .NET CLI first run experience by running arbitrary cmd to populate local package cache
 RUN dotnet help
-
-#USER buildagent
+# for system tests
+EXPOSE 8111
 
 CMD ["/run-services.sh"]
 
-EXPOSE 9090
-# for system tests
-EXPOSE 8111
