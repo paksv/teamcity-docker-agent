@@ -34,12 +34,6 @@ RUN update-alternatives --install /usr/bin/java java ${JRE_HOME}/bin/java 1 && \
 ##################################
 
 
-VOLUME /data/teamcity_agent/conf
-VOLUME /opt/buildagent/work
-VOLUME /opt/buildagent/system
-VOLUME /opt/buildagent/temp
-VOLUME /opt/buildagent/logs
-VOLUME /opt/buildagent/tools
 
 ENV CONFIG_FILE=/data/teamcity_agent/conf/buildAgent.properties \
     LANG=C.UTF-8
@@ -49,10 +43,8 @@ LABEL dockerImage.teamcity.version="latest" \
 
 COPY run-agent.sh /run-agent.sh
 COPY run-services.sh /run-services.sh
-COPY dist/buildagent /opt/buildagent
 
 RUN useradd -m buildagent && \
-    chmod +x /opt/buildagent/bin/*.sh && \
     chmod +x /run-agent.sh /run-services.sh && sync
 
 LABEL dockerImage.teamcity.version="latest" \
@@ -116,7 +108,30 @@ COPY run-docker.sh /services/run-docker.sh
 # Trigger .NET CLI first run experience by running arbitrary cmd to populate local package cache
 RUN dotnet help
 # for system tests
+
+COPY dist/buildagent /opt/buildagent
+
+RUN mkdir -p /data/teamcity_agent/conf \
+    && mkdir -p /opt/buildagent/work \
+    && mkdir -p /opt/buildagent/system \
+    && mkdir -p /opt/buildagent/temp \
+    && mkdir -p /opt/buildagent/logs \
+    && mkdir -p /opt/buildagent/tools \
+    && chown -R buildagent:buildagent /data/teamcity_agent/ \
+    && chown -R buildagent:buildagent /opt/buildagent \
+    && chown -R buildagent:buildagent /services \
+    && chmod +x /opt/buildagent/bin/*.sh
+
+VOLUME /data/teamcity_agent/conf
+VOLUME /opt/buildagent/work
+VOLUME /opt/buildagent/system
+VOLUME /opt/buildagent/temp
+VOLUME /opt/buildagent/logs
+VOLUME /opt/buildagent/tools
+
 EXPOSE 8111
+
+USER buildagent
 
 CMD ["/run-services.sh"]
 
