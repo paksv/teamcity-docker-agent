@@ -80,9 +80,9 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=true \
     GIT_SSH_VARIANT=ssh \
     # Install .NET Core SDK
     DOTNET_SDK_VERSION=3.0.100
-
-RUN     apt-get update && apt-get install -y git mercurial apt-transport-https ca-certificates software-properties-common sudo \
-                libc6 \
+#
+RUN apt-get update && apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -y python3 git mercurial apt-transport-https ca-certificates software-properties-common sudo && \
+                apt-get install -y libc6 \
                 libgcc1 \
                 libgssapi-krb5-2 \
                 libicu60 \
