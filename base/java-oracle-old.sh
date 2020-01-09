@@ -10,11 +10,17 @@ function installJDK {
     local FILE=jdk-$VERSION-linux_$ARCH.tar.gz
     local DIR=/usr/lib/jvm/jdk-$VERSION-$ARCH
     local URL="${3:-https://repo.labs.intellij.net/download/oracle/$FILE}"
-
-    curl "$URL" --output "/tmp/$FILE"
+    downloadFile $URL $FILE
     mkdir -p "$DIR"
     tar -xzf "/tmp/$FILE" --strip-components=1 -C "$DIR"
     rm "/tmp/$FILE"
+}
+
+function downloadFile {
+    local URL=$1
+    local FILE=$2
+    echo "Downloading ${URL} into $FILE"
+    curl "$URL" --output "/tmp/$FILE"
 }
 
 installJDK 7.79 x64
@@ -37,7 +43,7 @@ distrs=(
 )
 for FILE in ${distrs[*]}
 do
-    curl https://repo.labs.intellij.net/download/oracle/$FILE -output $FILE
+  downloadFile https://repo.labs.intellij.net/download/oracle/$FILE $FILE
 done
 
 sed -i 's/\.\/$outname$/\.\/$outname -q/' jdk-6.45-linux_i586.bin
@@ -90,7 +96,7 @@ rm jdk-1.4.2.19-linux_i586.bin
 ######################################################################
 VERSION=2.2.0
 FILE=tzupdater-$VERSION.jar
-curl https://repo.labs.intellij.net/oracle_jdk/oracle/tzupdater/$VERSION/$FILE -output $FILE
+downloadFile https://repo.labs.intellij.net/oracle_jdk/oracle/tzupdater/$VERSION/$FILE $FILE
 # tzdata has 1.5 bytecode, so 1.4 can't use it
 # 1.5 32bit crashes for unknown reason
 ls /usr/lib/jvm/jdk-*/bin/java | grep -v '/jdk-1.4' | grep -v '/jdk-5u22/' | xargs -n1 -I% sh -c "% -jar ./$FILE -u || true"
