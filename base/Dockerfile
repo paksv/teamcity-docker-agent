@@ -3,19 +3,24 @@ FROM ubuntu:18.04
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates fontconfig locales unzip \
+    apt-get install -y --no-install-recommends curl ca-certificates fontconfig locales unzip libc6-i386 \
     && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
+# download java versions
 
-# JDK preparation start
+COPY java-oracle-old.sh /java-oracle-old.sh
 
-ARG MD5SUM='3511152bd52c867f8b550d7c8d7764aa'
-ARG JDK_URL='https://d3pxv6yz143wms.cloudfront.net/8.232.09.1/amazon-corretto-8.232.09.1-linux-x64.tar.gz'
+RUN chmod +x  /java-oracle-old.sh && /java-oracle-old.sh
+
+# JDK 8 preparation start
+
+ARG JDK8_MD5SUM='3511152bd52c867f8b550d7c8d7764aa'
+ARG JDK8_URL='https://d3pxv6yz143wms.cloudfront.net/8.232.09.1/amazon-corretto-8.232.09.1-linux-x64.tar.gz'
 
 RUN set -eux; \
-    curl -LfsSo /tmp/openjdk.tar.gz ${JDK_URL}; \
-    echo "${MD5SUM} */tmp/openjdk.tar.gz" | md5sum -c -; \
+    curl -LfsSo /tmp/openjdk.tar.gz ${JDK8_URL}; \
+    echo "${JDK8_MD5SUM} */tmp/openjdk.tar.gz" | md5sum -c -; \
     mkdir -p /opt/java/openjdk; \
     cd /opt/java/openjdk; \
     tar -xf /tmp/openjdk.tar.gz --strip-components=1; \
@@ -23,6 +28,16 @@ RUN set -eux; \
 
 ENV JAVA_HOME=/opt/java/openjdk \
     JRE_HOME=/opt/java/openjdk/jre \
+    JDK_14=/usr/lib/jvm/jdk-1.4.2.19 \
+    JDK_15=/usr/lib/jvm/jdk-5u22 \
+    JDK_15_x64=/usr/lib/jvm/jdk-5u22-x64 \
+    JDK_16=/usr/lib/jvm/jdk-6u45 \
+    JDK_16_x64=/usr/lib/jvm/jdk-6u45-x64 \
+    JDK_17=/usr/lib/jvm/jdk-7.79-i586 \
+    JDK_17_x64=/usr/lib/jvm/jdk-7.79-x64 \
+    JDK_18=/opt/java/openjdk \
+    JDK_18_x64=/opt/java/openjdk \
+    JAVA_HOME=/opt/java/openjdk \
     PATH="/opt/java/openjdk/bin:$PATH"
 
 RUN update-alternatives --install /usr/bin/java java ${JRE_HOME}/bin/java 1 && \
