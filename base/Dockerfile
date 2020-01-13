@@ -91,6 +91,7 @@ RUN apt-get update && apt-get -o Dpkg::Options::="--force-confdef" -o Dpkg::Opti
                 libstdc++6 \
                 zlib1g \
                 gettext \
+                make \
                 && rm -rf /var/lib/apt/lists/*
 
 RUN     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
