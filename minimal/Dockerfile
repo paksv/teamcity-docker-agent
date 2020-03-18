@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates fontconfig locales vim dnsutils ping unzip libc6-i386 \
+    apt-get install -y --no-install-recommends curl ca-certificates fontconfig locales vim dnsutils iputils-ping unzip libc6-i386 \
     && echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
