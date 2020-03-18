@@ -59,7 +59,7 @@ LABEL dockerImage.teamcity.version="latest" \
 COPY run-agent.sh /run-agent.sh
 COPY run-services.sh /run-services.sh
 
-RUN useradd -m buildagent && \
+RUN useradd -m buildagent -u 1024 -g 1024 && \
     chmod +x /run-agent.sh /run-services.sh && sync
 
 LABEL dockerImage.teamcity.version="latest" \
